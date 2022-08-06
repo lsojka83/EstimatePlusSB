@@ -1,5 +1,8 @@
 package pl.portfolio.estimateplussb.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -9,11 +12,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import pl.portfolio.estimateplussb.entity.User;
 import pl.portfolio.estimateplussb.model.Messages;
 import pl.portfolio.estimateplussb.model.Security;
+import pl.portfolio.estimateplussb.model.URL;
 import pl.portfolio.estimateplussb.repository.UserRepository;
+import pl.portfolio.estimateplussb.service.EmailService;
 import pl.portfolio.estimateplussb.validator.PasswordValidator;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Controller
 public class AppController {
@@ -23,11 +31,16 @@ public class AppController {
 
     private final UserRepository userRepository;
     private final PasswordValidator passwordValidator;
+    private final EmailService emailService;
 
 
-    public AppController(UserRepository userRepository, PasswordValidator passwordValidator) {
+    private Logger logger = LoggerFactory.getLogger(AppController.class);
+
+
+    public AppController(UserRepository userRepository, PasswordValidator passwordValidator, EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordValidator = passwordValidator;
+        this.emailService = emailService;
     }
 
     @GetMapping("")
@@ -35,6 +48,12 @@ public class AppController {
                             @RequestParam(required = false) String userId
     ) {
         if (userId != null) {  //temporary!!!
+
+            if(userRepository.findById(Long.parseLong(userId)).isEmpty())
+            {
+                return "login";
+
+            }
             httpSession.setAttribute("user", userRepository.findById(Long.parseLong(userId)).get());
             if (userRepository.findById(Long.parseLong(userId)).get().isAdmin()) {
                 return "redirect:/admin";
@@ -99,11 +118,18 @@ public class AppController {
     @PostMapping("/addaccount")
     public String addAccount(Model model,
                              @Valid User user,
-                             BindingResult bindingResult) {
+                             BindingResult bindingResult,
+                             @RequestParam String password2) {
 
         if (!passwordValidator.isValid(user.getPassword(), null)) {
             model.addAttribute("invalidPassword", Messages.INVALID_PASSWORD);
         }
+        if (!user.getPassword().equals(
+                password2
+        )) {
+            model.addAttribute("invalidPassword", Messages.PASSWORD_ARE_NOT_EQUAL);
+        }
+
         if (bindingResult.hasErrors()) {
             return "add-account";
         }
@@ -116,5 +142,94 @@ public class AppController {
         user.setPassword(Security.hashPassword(user.getPassword()));
         userRepository.save(user);
         return "redirect:/";
+    }
+
+    @GetMapping("/resetpassword")
+    public String resetPassword() {
+        return "reset-password";
+    }
+
+    @PostMapping("/resetpassword")
+    public String resetPassword(@RequestParam String email,
+                                Model model) {
+        List<User> userList = userRepository.findAll();
+        if (userList.stream()
+                .noneMatch(user -> user.getEmail()
+                        .equals(email))) {
+            model.addAttribute("emailnotexists", "yes");
+            return "reset-password";
+        }
+
+        User user = userList.stream().filter(u -> u.getEmail().equals(email)).findFirst().get();
+        user.setUuid(UUID.randomUUID().toString());
+        user.setSentResetRequest(1);
+        userRepository.save(user);
+
+        // send an email
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setText("Clink link to reset passwodrd: "+ URL.APP_URL+"/reset?uuid=%s");
+            String text = String.format(message.getText(), user.getUuid());
+            emailService.sendSimpleMessage(user.getEmail(), Messages.APP_NAME+" - "+Messages.PASSWORD_RESET_LINK, text);
+        }catch( Exception e ){
+            // catch error
+            logger.info("Error Sending Email: " + e.getMessage());
+        }
+
+        model.addAttribute("message", "Email sent");
+        return "show-message";
+    }
+
+
+    @GetMapping("/reset")
+    public String resetPasswordForm(@RequestParam String uuid,
+                                    Model model) {
+
+        if(userRepository.findByUuid(uuid).isEmpty())
+        {
+            model.addAttribute("message", "Link is not active");
+            return "show-message";
+        }
+
+        model.addAttribute("uuid", uuid);
+        return "reset-password-new-password";
+    }
+
+    @PostMapping("/reset")
+    public String resetPasswordFormPost(Model model,
+                                        @RequestParam String password,
+                                        @RequestParam String password2,
+                                        @RequestParam(required = false) String uuid
+    ) {
+        if (!passwordValidator.isValid(password, null)) {
+            model.addAttribute("invalidPassword", Messages.INVALID_PASSWORD);
+        }
+        if (!password.equals(
+                password2
+        )) {
+            model.addAttribute("invalidPassword", Messages.PASSWORD_ARE_NOT_EQUAL);
+        }
+
+        if (model.getAttribute("invalidPassword") != null) {
+            return "reset-password-new-password";
+        }
+
+        Optional<User> userOptional = userRepository.findByUuid(uuid);
+
+        if (userOptional.get()==null) {
+            return "redirect:/";
+        }
+
+        User user = userOptional.get();
+
+        user.setPassword(password);
+        user.setSentResetRequest(0);
+        user.setUuid(null);
+
+        user.setPasswordUnhashed(user.getPassword());
+        user.setPassword(Security.hashPassword(user.getPassword()));
+        userRepository.save(user);
+        model.addAttribute("message", "Password was reset");
+        return "show-message";
     }
 }

@@ -37,6 +37,10 @@ public class User {
     @JoinColumn(name = "userPriceList_id")
     private PriceList userPriceList;
 
+    private String uuid;
+    private int active;
+    private int sentResetRequest;
+
     public User() {
     }
 
@@ -104,15 +108,27 @@ public class User {
         this.passwordUnhashed = passwordUnhashed;
     }
 
-//    @Override
-//    public String toString() {
-//        return "User{" +
-//                "id=" + id +
-//                ", userName='" + userName + '\'' +
-//                ", email='" + email + '\'' +
-//                ", password='" + password + '\'' +
-//                ", admin=" + admin +
-//                ", userPriceList=" + userPriceList +
-//                '}';
-//    }
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public int getActive() {
+        return active;
+    }
+
+    public void setActive(int active) {
+        this.active = active;
+    }
+
+    public int getSentResetRequest() {
+        return sentResetRequest;
+    }
+
+    public void setSentResetRequest(int sentResetRequest) {
+        this.sentResetRequest = sentResetRequest;
+    }
 }

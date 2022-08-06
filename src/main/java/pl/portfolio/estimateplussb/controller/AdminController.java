@@ -321,28 +321,71 @@ public class AdminController {
     public String editAdmin(
             @Valid User user,
             BindingResult results,
-            Model model
+            Model model,
+            @RequestParam String password,
+            @RequestParam String password2
     ) {
-        if (!user.getPassword().equals(userRepository.findById(user.getId()).get().getPassword()))
-            if (!passwordValidator.isValid(user.getPassword(), null)) {
-                model.addAttribute("invalidPassword", Messages.INVALID_PASSWORD);
-            }
+//        if (!user.getPassword().equals(userRepository.findById(user.getId()).get().getPassword()))
+//            if (!passwordValidator.isValid(user.getPassword(), null)) {
+//                model.addAttribute("invalidPassword", Messages.INVALID_PASSWORD);
+//            }
+//
+//        if (results.hasErrors()) {
+//            return "admin-edit-account";
+//        }
+//        if (model.getAttribute("invalidPassword") != null) {
+//            return "admin-edit-account";
+//        }
+////        user.setPasswordUnhashed(user.getPassword());
+////        user.setPassword(Security.hashPassword(user.getPassword()));
+//        if (!user.getPassword().equals(userRepository.findById(user.getId()).get().getPassword())) {
+//            user.setPasswordUnhashed(user.getPassword());
+//            user.setPassword(Security.hashPassword(user.getPassword()));
+//        }
+//        userRepository.save(user);
+//        model.addAttribute("userCount", userRepository.count());
+//        return "admin-dashboard";
+
+
+
+
+        boolean updatePassword = false;
+
+        if (!passwordValidator.isValid(user.getPassword(), null)) {
+            model.addAttribute("invalidPassword", Messages.INVALID_PASSWORD);
+        }
 
         if (results.hasErrors()) {
             return "admin-edit-account";
         }
-        if (model.getAttribute("invalidPassword") != null) {
-            return "admin-edit-account";
+
+        if (!password.isEmpty() || !password2.isEmpty())
+        {
+            if (!password.equals(password2))
+            {
+                model.addAttribute("invalidPassword", Messages.PASSWORD_ARE_NOT_EQUAL);
+            } else {
+                updatePassword = true;
+            }
+            if (model.getAttribute("invalidPassword") != null) {
+                return "admin-edit-account";
+            }
         }
-//        user.setPasswordUnhashed(user.getPassword());
-//        user.setPassword(Security.hashPassword(user.getPassword()));
-        if (!user.getPassword().equals(userRepository.findById(user.getId()).get().getPassword())) {
-            user.setPasswordUnhashed(user.getPassword());
-            user.setPassword(Security.hashPassword(user.getPassword()));
+        if(!updatePassword) {
+            user.setPasswordUnhashed(userRepository.findById(user.getId()).get().getPasswordUnhashed());
+            user.setPassword(userRepository.findById(user.getId()).get().getPassword());
         }
+        else {
+            user.setPasswordUnhashed(password);
+            user.setPassword(Security.hashPassword(password));
+        }
+
         userRepository.save(user);
         model.addAttribute("userCount", userRepository.count());
         return "admin-dashboard";
+
+
+
     }
 
 

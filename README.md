@@ -7,6 +7,7 @@
 ### - Spring Boot:
 #### - Spring Web
 #### - Spring Data JPA
+#### - Spring Mail
 ### - Hibernate
 #### - Forms validation
 ### - Java (8)

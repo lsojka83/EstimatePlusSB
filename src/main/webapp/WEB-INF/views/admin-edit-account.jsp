@@ -14,7 +14,7 @@
                             <div class="card shadow-lg border-0 rounded-lg mt-5">
                                 <div class="card-header">
                                     <h3 class="text-center font-weight-light my-4">Edit
-                                    Account</h3>
+                                        Account</h3>
                                 </div>
                                 <div class="card-body">
                                     <form:form method="post" modelAttribute="user">
@@ -32,15 +32,22 @@
                                     </div>
 
                                     <div class="form-floating mb-3 mb-md-0">
-                                        <form:input path="password" id="password" element="div" type="password"
-                                                    cssClass="form-control"></form:input>
-                                        <form:errors path="password" cssClass="form-control"/>
-                                        <label for="password">Password</label>
+                                        <input type="password" name="password" placeholder="Enter new password"
+                                               id="password" class="form-control"/>
+                                        <label for="password">Enter new password</label>
                                         <c:if test="${not empty invalidPassword}">
                                             ${invalidPassword}
                                         </c:if>
                                     </div>
+                                    <div class="form-floating mb-3 mb-md-0">
+                                        <input type="password" name="password2" placeholder="Repeat new password"
+                                               id="password2" class="form-control"/>
+                                        <label for="password2">Reapet new password</label>
+                                    </div>
                                     <form:hidden path="admin"></form:hidden>
+                                    <form:hidden path="uuid"/>
+                                    <form:hidden path="active"/>
+                                    <form:hidden path="sentResetRequest"/>
                                     <div class="mt-4 mb-0">
                                         <div class="d-grid">
                                             <div class="btn btn-primary btn-block">
@@ -54,6 +61,7 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
                     </div>
             </main>
         </div>

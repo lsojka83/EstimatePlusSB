@@ -44,6 +44,10 @@
                                             ${invalidPassword}
                                         </c:if>
                                     </div>
+                                    <div class="form-floating mb-3">
+                                        <input type="password" name="password2" id="password2" class="form-control"/>
+                                        <label for="password2">Repeat password</label>
+                                    </div
 
                                     <form:hidden path="admin"></form:hidden>
 

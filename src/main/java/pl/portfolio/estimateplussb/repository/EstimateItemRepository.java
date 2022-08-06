@@ -13,17 +13,14 @@ public interface EstimateItemRepository extends JpaRepository<EstimateItem, Long
 
     @Modifying
     @Transactional
-//    @Query(nativeQuery = true,value = "DELETE FROM estimateplussb.estimate_estimateitem WHERE estimate_items_id = ?1")
     @Query(nativeQuery = true,value = "DELETE FROM heroku_266825118c34932.estimate_estimateitem WHERE estimate_items_id = ?1")
     void deleteFromParentRelationTableById(Long id);
 
-//    @Query(nativeQuery = true,value = "SELECT * FROM estimateplussb.estimate_estimateitem WHERE estimate_items_id = ?1")
     @Query(nativeQuery = true,value = "SELECT * FROM heroku_266825118c34932.estimate_estimateitem WHERE estimate_items_id = ?1")
     EstimateItem findByItemInParentTable(Long id);
 
     @Modifying
     @Transactional
-//    @Query(nativeQuery = true,value = "DELETE FROM estimateplussb.estimateitem WHERE id = ?1")
     @Query(nativeQuery = true,value = "DELETE FROM heroku_266825118c34932.estimateitem WHERE id = ?1")
     void deleteById(String id);
 
@@ -31,7 +28,6 @@ public interface EstimateItemRepository extends JpaRepository<EstimateItem, Long
     @Query("SELECT ei FROM EstimateItem ei LEFT JOIN FETCH ei.priceListItem pi where pi.id = :id")
     List<EstimateItem> findAllByPriceListItemId(@Param("id") Long id);
 
-//    @Query(nativeQuery = true, value = "SELECT * FROM estimateplussb.estimateitem LEFT JOIN estimateplussb.estimate_estimateitem On estimateitem.id = estimate_estimateitem.estimate_items_id WHERE Estimate_id is null")
     @Query(nativeQuery = true, value = "SELECT * FROM heroku_266825118c34932.estimateitem LEFT JOIN heroku_266825118c34932.estimate_estimateitem On estimateitem.id = estimate_estimateitem.estimate_items_id WHERE Estimate_id is null")
     List<EstimateItem> findAllItemsNotPresentInParentJoiningTable();
 }

@@ -27,47 +27,35 @@
 <%--                            <li class="text-center breadcrumb-item active">Login to start</li>--%>
 <%--                        </ol>--%>
                         </div>
+                        <h2></h2>
 
                         <div class="card shadow-lg border-0 rounded-lg mt-5">
-                            <div class="card-header"><h3 class="text-center font-weight-light my-4">Login</h3></div>
+                            <div class="card-header"><h3 class="text-center font-weight-light my-4">Enter your email to send password resetting link.</h3></div>
                             <div class="card-body">
-                                <form method="post">
+                                <form accept-charset="/resetpassword" method="post">
                                     <div class="form-floating mb-3">
-                                        <input class="form-control" name="userName" id="userName" type="text" placeholder="userName" />
-                                        <label for="userName">User Name</label>
-                                    </div>
-                                    <div class="form-floating mb-3">
-                                        <input class="form-control" name="password" id="inputPassword" type="password" placeholder="Password" />
-                                        <label for="inputPassword">Password</label>
+                                        <input class="form-control" name="email" id="email" type="text" placeholder="email" />
+                                        <label for="email">Email</label>
                                     </div>
                                     <div class="d-flex align-items-center justify-content-between mt-4 mb-0">
-                                        <button name="button" value="login"  class="btn btn-primary">Login</button>
+                                        <button name="button" value="send"  class="btn btn-primary">Send</button>
                                     </div>
                                 </form>
-                                <p>
-                                    <c:if test="${not empty incorrectLoginData}">
-                                        Wrong User Name or password! Try again.
-                                    </c:if>
-                                </p>
+                                <c:if test="${emailnotexists != null}">
+                                    <h3>Entered email doesn't belong to any user!</h3>
+                                </c:if>
                             </div>
-                            <div class="card-footer text-center py-3">
-                                <div class="small">
-                                    <form action="/addaccount" method="get">
-                                    <button name="button" value="newAccount">New account</button>
-                                    </form>
-                                    <form action="/resetpassword" method="get">
-                                        <button type="submit">Reset password</button>
+                            <div class="card shadow-lg border-0 rounded-lg mt-5">
+                                <div class="card-body">
+                                    <form method="get" action="/login">
+                                        <div class="d-flex align-items-center justify-content-between mt-4 mb-0">
+                                            <a href="\" class="btn btn-primary">Go to login page</a>
+                                        </div>
                                     </form>
                                 </div>
-                                </div>
+                            </div>
 
 
-                            <p>
-                                    <a href="/?userId=1">User1</a>
-                                </p>
-                                <p>
-                                    <a href="/?userId=11">Admin</a>
-                                </p>
                         </div>
                     </div>
                 </div>
