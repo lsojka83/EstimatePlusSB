@@ -40,9 +40,22 @@
                                         <input class="form-control" name="password" id="inputPassword" type="password" placeholder="Password" />
                                         <label for="inputPassword">Password</label>
                                     </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" name="inputRememberPassword" id="inputRememberPassword" type="checkbox" value="yes" />
+                                        <label class="form-check-label" for="inputRememberPassword">Remember Password</label>
+                                    </div>
                                     <div class="d-flex align-items-center justify-content-between mt-4 mb-0">
+                                        <a class="small" href="/resetpassword">Forgot Password?</a>
+<%--                                        <form action="/resetpassword" method="get">--%>
+<%--                                            <button type="submit">Reset password</button>--%>
+<%--                                        </form>--%>
+
+<%--                                        <a class="btn btn-primary" href="index.html">Login</a>--%>
                                         <button name="button" value="login"  class="btn btn-primary">Login</button>
                                     </div>
+<%--                                    <div class="d-flex align-items-center justify-content-between mt-4 mb-0">--%>
+<%--                                        <button name="button" value="login"  class="btn btn-primary">Login</button>--%>
+<%--                                    </div>--%>
                                 </form>
                                 <p>
                                     <c:if test="${not empty incorrectLoginData}">
@@ -52,12 +65,13 @@
                             </div>
                             <div class="card-footer text-center py-3">
                                 <div class="small">
-                                    <form action="/addaccount" method="get">
-                                    <button name="button" value="newAccount">New account</button>
-                                    </form>
-                                    <form action="/resetpassword" method="get">
-                                        <button type="submit">Reset password</button>
-                                    </form>
+                                    <a href="/addaccount">Need an account? Sign up!</a>
+<%--                                    <form action="/addaccount" method="get">--%>
+<%--                                    <button name="button" value="newAccount">New account</button>--%>
+<%--                                    </form>--%>
+<%--                                    <form action="/resetpassword" method="get">--%>
+<%--                                        <button type="submit">Reset password</button>--%>
+<%--                                    </form>--%>
                                 </div>
                                 </div>
 
