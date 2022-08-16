@@ -45,8 +45,11 @@
                                                        id="password2" class="form-control"/>
                                                 <label for="password2">Reapet new password</label>
                                             </div>
-                                            <form:hidden path="admin"></form:hidden>
+                                            <form:hidden path="admin"/>
                                             <form:hidden path="uuid"/>
+                                            <form:hidden path="id"/>
+                                            <form:hidden path="estimates"/>
+                                            <form:hidden path="userPriceList"/>
                                             <form:hidden path="active"/>
                                             <form:hidden path="sentResetRequest"/>
 

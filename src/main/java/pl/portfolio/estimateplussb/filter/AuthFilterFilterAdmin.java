@@ -6,6 +6,7 @@ import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 
@@ -23,12 +24,20 @@ public class AuthFilterFilterAdmin implements Filter {
 
         final HttpServletRequest req = (HttpServletRequest) request;
 
-        if (!((User) req.getSession().getAttribute("user")).isAdmin())
-        {
-            HttpServletResponse httpResponse = (HttpServletResponse) response;
-            httpResponse.sendRedirect(req.getContextPath() + "/");
-            return;
-        }
+
+//        if(req.getSession().getAttribute("userWasEdited")!=null)
+//        {
+//
+//        }
+//        else {
+
+            if (!((User) req.getSession().getAttribute("loggedUser")).isAdmin()) {
+                HttpServletResponse httpResponse = (HttpServletResponse) response;
+                httpResponse.sendRedirect(req.getContextPath() + "/");
+                return;
+            }
+//        }
+
         chain.doFilter(request, response);
     }
 }

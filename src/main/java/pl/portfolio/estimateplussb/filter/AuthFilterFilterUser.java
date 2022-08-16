@@ -23,7 +23,7 @@ public class AuthFilterFilterUser implements Filter {
 
         final HttpServletRequest req = (HttpServletRequest) request;
 
-        if (((User) req.getSession().getAttribute("user")).isAdmin())
+        if (((User) req.getSession().getAttribute("loggedUser")).isAdmin())
         {
             HttpServletResponse httpResponse = (HttpServletResponse) response;
             httpResponse.sendRedirect(req.getContextPath() + "/");

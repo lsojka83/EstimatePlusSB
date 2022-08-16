@@ -79,6 +79,9 @@
                             <p>
                                     <a href="/?userId=1">User1</a>
                                 </p>
+                            <p>
+                                <a href="/?userId=21">User2</a>
+                            </p>
                                 <p>
                                     <a href="/?userId=11">Admin</a>
                                 </p>

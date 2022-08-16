@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import pl.portfolio.estimateplussb.entity.User;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User,Long> {
@@ -17,6 +18,9 @@ public interface UserRepository extends JpaRepository<User,Long> {
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.userPriceList WHERE u.id = :id")
     User findByIdWithPricelist(@Param("id") Long id);
+
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.estimates JOIN FETCH u.userPriceList")
+    List<User> findByIdWithEstimatesAndPriceList();
 
     Optional<User> findByUuid(String uuid);
 

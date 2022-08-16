@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
-@SessionAttributes("user")
+@SessionAttributes("loggedUser")
 @RequestMapping("/admin")
 public class AdminController {
 
@@ -52,10 +52,10 @@ public class AdminController {
 
     @GetMapping("")
     public String dashboard(Model model,
-                            HttpSession httpSession)
-    {
+                            HttpSession httpSession) {
         model.addAttribute("userCount", userRepository.count());
         model.addAttribute("priceListCount", priceListRepository.count());
+
         return "admin-dashboard";
     }
 
@@ -78,10 +78,10 @@ public class AdminController {
             String fileName = Excel.getFileName(file);
             Map<Integer, List<String>> fileData = Excel.getExcelData(file, firstRowIsColumnsNames);
             model.addAttribute("columnsFromFile", columnsAssignmentMap);
-            System.out.println("!!!"+columnsAssignmentMap);
+            System.out.println("!!!" + columnsAssignmentMap);
             httpSession.setAttribute("data", fileData);
-            model.addAttribute("firstRowIsColumnsNames","yes");
-            model.addAttribute("fileName",fileName);
+            model.addAttribute("firstRowIsColumnsNames", "yes");
+            model.addAttribute("fileName", fileName);
             return "admin-upload-file-select-columns";
 
         }
@@ -106,10 +106,8 @@ public class AdminController {
     ) {
         ColumnAssigment columnAssigment = new ColumnAssigment();
 
-        if(!preset.equals("-"))
-        {
-            if(preset.equals("legrand"))
-            {
+        if (!preset.equals("-")) {
+            if (preset.equals("legrand")) {
                 columnAssigment.referenceNumberColumnNumber = 6;
                 columnAssigment.descriptionColumnNumber = 7;
                 columnAssigment.brandColumnNumber = 5;
@@ -118,8 +116,7 @@ public class AdminController {
                 columnAssigment.unitColumnNumber = 10;
                 columnAssigment.baseVatRateColumnNumber = 14;
             }
-        }
-        else {
+        } else {
             columnAssigment.referenceNumberColumnNumber = Integer.valueOf(referenceNumber);
             columnAssigment.descriptionColumnNumber = Integer.valueOf(description);
             columnAssigment.brandColumnNumber = Integer.valueOf(brand);
@@ -130,70 +127,70 @@ public class AdminController {
         }
 
         final PriceList priceList;
-            PriceList existingPriceList;
-        priceList = Excel.importFromExcelData((Map<Integer, List<String>>)httpSession.getAttribute("data"), columnAssigment,firstRowIsColumnsNames, fileName);
+        PriceList existingPriceList;
+        priceList = Excel.importFromExcelData((Map<Integer, List<String>>) httpSession.getAttribute("data"), columnAssigment, firstRowIsColumnsNames, fileName);
 
 
-            if (priceListRepository.findByName(priceList.getName()) != null) {
-                existingPriceList = priceListRepository.findByName(priceList.getName());
-                logger.info("!!!" + priceList.getPriceListItems());
+        if (priceListRepository.findByName(priceList.getName()) != null) {
+            existingPriceList = priceListRepository.findByName(priceList.getName());
+            logger.info("!!!" + priceList.getPriceListItems());
 
-                existingPriceList.getPriceListItems().stream() //update existing PLIs with elements from loaded PL
-                        .forEach(pi ->
-                        {
+            existingPriceList.getPriceListItems().stream() //update existing PLIs with elements from loaded PL
+                    .forEach(pi ->
+                    {
+                        if (priceList.getPriceListItems().stream()
+                                .filter(npi -> npi.getReferenceNumber()
+                                        .equals(pi.getReferenceNumber()))
+                                .collect(Collectors.toList()) != null
+                                &&
+                                priceList.getPriceListItems().stream()
+                                        .filter(npi -> npi.getReferenceNumber()
+                                                .equals(pi.getReferenceNumber()))
+                                        .collect(Collectors.toList()).size() > 0
+                        ) {
                             if (priceList.getPriceListItems().stream()
                                     .filter(npi -> npi.getReferenceNumber()
                                             .equals(pi.getReferenceNumber()))
-                                    .collect(Collectors.toList()) != null
-                                    &&
-                                    priceList.getPriceListItems().stream()
-                                            .filter(npi -> npi.getReferenceNumber()
-                                                    .equals(pi.getReferenceNumber()))
-                                            .collect(Collectors.toList()).size() > 0
-                            ) {
-                                if (priceList.getPriceListItems().stream()
-                                        .filter(npi -> npi.getReferenceNumber()
-                                                .equals(pi.getReferenceNumber()))
-                                        .collect(Collectors.toList()).get(0) != null) {
-                                    PriceListItem newPLI = priceList.getPriceListItems().stream()
-                                            .filter(npi -> npi.getReferenceNumber().equals(pi.getReferenceNumber())).collect(Collectors.toList()).get(0);
-                                    pi.setVendorName(newPLI.getVendorName());
-                                    pi.setDescription(newPLI.getDescription());
-                                    pi.setBrand(newPLI.getBrand());
-                                    pi.setComment(newPLI.getComment());
-                                    pi.setUnitNetPrice(newPLI.getUnitNetPrice());
-                                    pi.setUnit(newPLI.getUnit());
-                                    pi.setBaseVatRate(newPLI.getBaseVatRate());
-                                    priceListItemRepository.save(pi);
-                                }
+                                    .collect(Collectors.toList()).get(0) != null) {
+                                PriceListItem newPLI = priceList.getPriceListItems().stream()
+                                        .filter(npi -> npi.getReferenceNumber().equals(pi.getReferenceNumber())).collect(Collectors.toList()).get(0);
+                                pi.setVendorName(newPLI.getVendorName());
+                                pi.setDescription(newPLI.getDescription());
+                                pi.setBrand(newPLI.getBrand());
+                                pi.setComment(newPLI.getComment());
+                                pi.setUnitNetPrice(newPLI.getUnitNetPrice());
+                                pi.setUnit(newPLI.getUnit());
+                                pi.setBaseVatRate(newPLI.getBaseVatRate());
+                                priceListItemRepository.save(pi);
                             }
-                        });
-                priceList.getPriceListItems().stream() // add new items from loaded PL to existing PL
-                        .forEach(npi ->
-                        {
-                            if (existingPriceList.getPriceListItems().stream()
-                                    .anyMatch(pi -> pi.getReferenceNumber().equals(npi.getReferenceNumber()))) {
-                            } else {
-                                priceListItemRepository.save(npi);
-                                existingPriceList.getPriceListItems().add(npi);
-                            }
-                        });
+                        }
+                    });
+            priceList.getPriceListItems().stream() // add new items from loaded PL to existing PL
+                    .forEach(npi ->
+                    {
+                        if (existingPriceList.getPriceListItems().stream()
+                                .anyMatch(pi -> pi.getReferenceNumber().equals(npi.getReferenceNumber()))) {
+                        } else {
+                            priceListItemRepository.save(npi);
+                            existingPriceList.getPriceListItems().add(npi);
+                        }
+                    });
 
-                // TODO comment removed items from loaded PL to existing PL
+            // TODO comment removed items from loaded PL to existing PL
 
-                existingPriceList.countItems();
-                priceListRepository.save(existingPriceList);
-                model.addAttribute("priceList", existingPriceList);
-            } else if(priceList.getPriceListItems()!=null && priceList.getErrorMessage().isBlank()){
-                priceList.getPriceListItems().stream().forEach(pi -> priceListItemRepository.save(pi));
-                priceListRepository.save(priceList);
+            existingPriceList.countItems();
+            priceListRepository.save(existingPriceList);
+            model.addAttribute("priceList", existingPriceList);
+        } else if (priceList.getPriceListItems() != null && priceList.getErrorMessage().isBlank()) {
+            priceList.getPriceListItems().stream().forEach(pi -> priceListItemRepository.save(pi));
+            priceListRepository.save(priceList);
 
-                model.addAttribute("priceList", priceList);
-            }else{
-                model.addAttribute("errorMessage", priceList.getErrorMessage());
-                return "admin-error-message";
-            }
-            return "admin-show-pricelist";
+            model.addAttribute("priceList", priceList);
+        } else {
+            model.addAttribute("errorMessage", priceList.getErrorMessage());
+            return "admin-error-message";
+        }
+        return "admin-show-pricelist";
     }
 
     @GetMapping("/selectpricelist")
@@ -261,7 +258,7 @@ public class AdminController {
         }
 
         logger.info("!!! " + priceListId);
-        if(button.equals("save")) {
+        if (button.equals("save")) {
             priceListItemRepository.save(priceListItem);
         }
         model.addAttribute("priceList", priceListRepository.findByIdWithPriceListItems(Long.parseLong(priceListId)));
@@ -313,7 +310,8 @@ public class AdminController {
                             Model model
     ) {
 
-        model.addAttribute("user", userRepository.findById(((User) httpSession.getAttribute("user")).getId()).get());
+//        model.addAttribute("user", userRepository.findById(((User) httpSession.getAttribute("user")).getId()).get());
+        model.addAttribute("user", httpSession.getAttribute("loggedUser"));
         return "admin-edit-account";
     }
 
@@ -325,29 +323,6 @@ public class AdminController {
             @RequestParam String password,
             @RequestParam String password2
     ) {
-//        if (!user.getPassword().equals(userRepository.findById(user.getId()).get().getPassword()))
-//            if (!passwordValidator.isValid(user.getPassword(), null)) {
-//                model.addAttribute("invalidPassword", Messages.INVALID_PASSWORD);
-//            }
-//
-//        if (results.hasErrors()) {
-//            return "admin-edit-account";
-//        }
-//        if (model.getAttribute("invalidPassword") != null) {
-//            return "admin-edit-account";
-//        }
-////        user.setPasswordUnhashed(user.getPassword());
-////        user.setPassword(Security.hashPassword(user.getPassword()));
-//        if (!user.getPassword().equals(userRepository.findById(user.getId()).get().getPassword())) {
-//            user.setPasswordUnhashed(user.getPassword());
-//            user.setPassword(Security.hashPassword(user.getPassword()));
-//        }
-//        userRepository.save(user);
-//        model.addAttribute("userCount", userRepository.count());
-//        return "admin-dashboard";
-
-
-
 
         boolean updatePassword = false;
 
@@ -359,10 +334,8 @@ public class AdminController {
             return "admin-edit-account";
         }
 
-        if (!password.isEmpty() || !password2.isEmpty())
-        {
-            if (!password.equals(password2))
-            {
+        if (!password.isEmpty() || !password2.isEmpty()) {
+            if (!password.equals(password2)) {
                 model.addAttribute("invalidPassword", Messages.PASSWORD_ARE_NOT_EQUAL);
             } else {
                 updatePassword = true;
@@ -371,11 +344,10 @@ public class AdminController {
                 return "admin-edit-account";
             }
         }
-        if(!updatePassword) {
+        if (!updatePassword) {
             user.setPasswordUnhashed(userRepository.findById(user.getId()).get().getPasswordUnhashed());
             user.setPassword(userRepository.findById(user.getId()).get().getPassword());
-        }
-        else {
+        } else {
             user.setPasswordUnhashed(password);
             user.setPassword(Security.hashPassword(password));
         }
@@ -383,7 +355,6 @@ public class AdminController {
         userRepository.save(user);
         model.addAttribute("userCount", userRepository.count());
         return "admin-dashboard";
-
 
 
     }
@@ -428,7 +399,71 @@ public class AdminController {
         }
     }
 
+    @GetMapping("/users")
+    public String users(Model model,
+                        HttpSession httpSession) {
+        model.addAttribute("users", userRepository.findAll());
+        model.addAttribute("currentUser", httpSession.getAttribute("loggedUser"));
+        return "admin-show-users";
+    }
 
+    @GetMapping("/edituser")
+    public String editAdmin(Model model,
+                            @RequestParam Long id,
+                            HttpSession httpSession
+    ) {
+        model.addAttribute("userEdited", userRepository.findById(id).get());
+        logger.info("!!!"+httpSession.getAttribute("loggedUser"));
+        return "admin-edit-user";
+    }
 
+    @PostMapping("/edituser")
+    public String editUser(
+            @Valid User userEdited,
+            BindingResult results,
+            Model model,
+            @RequestParam String password,
+            @RequestParam String password2,
+            HttpSession httpSession
+    ) {
+        boolean updatePassword = false;
 
+        if (!passwordValidator.isValid(userEdited.getPassword(), null)) {
+            model.addAttribute("invalidPassword", Messages.INVALID_PASSWORD);
+        }
+
+        if (results.hasErrors()) {
+            return "admin-edit-user";
+        }
+
+        if (!password.isEmpty() || !password2.isEmpty()) {
+            if (!password.equals(password2)) {
+                model.addAttribute("invalidPassword", Messages.PASSWORD_ARE_NOT_EQUAL);
+            } else {
+                updatePassword = true;
+            }
+            if (model.getAttribute("invalidPassword") != null) {
+                return "admin-edit-user";
+            }
+        }
+        if (!updatePassword) {
+            userEdited.setPasswordUnhashed(userRepository.findById(userEdited.getId()).get().getPasswordUnhashed());
+            userEdited.setPassword(userRepository.findById(userEdited.getId()).get().getPassword());
+        } else {
+            userEdited.setPasswordUnhashed(password);
+            userEdited.setPassword(Security.hashPassword(password));
+        }
+
+        userRepository.save(userEdited);
+        return "redirect:/admin/users";
+    }
+
+    @GetMapping("/deleteuser")
+    public String deleteUser(@RequestParam Long id) {
+        User user = userRepository.findById(id).get();
+
+//        estimateRepository.delete();
+        userRepository.delete(user);
+        return "redirect:/admin/users";
+    }
 }

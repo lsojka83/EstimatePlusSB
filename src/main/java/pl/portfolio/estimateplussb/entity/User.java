@@ -1,5 +1,8 @@
 package pl.portfolio.estimateplussb.entity;
 
+import org.hibernate.annotations.Fetch;
+import org.springframework.data.repository.cdi.Eager;
+
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -33,7 +36,7 @@ public class User {
             joinColumns = @JoinColumn(name = "User_id"),
             inverseJoinColumns = @JoinColumn(name = "estimates_id"))
     List<Estimate> estimates = new ArrayList<>();
-    @ManyToOne
+    @ManyToOne (cascade = CascadeType.ALL)
     @JoinColumn(name = "userPriceList_id")
     private PriceList userPriceList;
 

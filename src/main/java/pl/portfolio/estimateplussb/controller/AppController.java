@@ -58,7 +58,7 @@ public class AppController {
                 return "login";
 
             }
-            httpSession.setAttribute("user", userRepository.findById(Long.parseLong(userId)).get());
+            httpSession.setAttribute("loggedUser", userRepository.findById(Long.parseLong(userId)).get());
             if (userRepository.findById(Long.parseLong(userId)).get().isAdmin()) {
                 return "redirect:/admin";
             } else {
@@ -72,7 +72,7 @@ public class AppController {
                 Optional<User> userOptional = userRepository.findByUuid(c.getValue());
                 if (userOptional.isPresent()) {
                     user = userOptional.get();
-                        httpSession.setAttribute("user", user);
+                        httpSession.setAttribute("loggedUser", user);
 
                         if (user.isAdmin()) {
                             return "redirect:/admin";
@@ -113,7 +113,7 @@ public class AppController {
                 model.addAttribute("incorrectLoginData", incorrectLoginData);
                 return "login";
             }
-            httpSession.setAttribute("user", user);
+            httpSession.setAttribute("loggedUser", user);
 
             if (inputRememberPassword != null && inputRememberPassword.equals("yes")) {
                 Cookie cookie = new Cookie("remember_user", user.getUuid());

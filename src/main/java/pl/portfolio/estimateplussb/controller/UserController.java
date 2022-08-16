@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 
 @Controller
 //@Scope("session")
-@SessionAttributes({"estimate", "user", "userId", "estimateChanged"})
+@SessionAttributes({"estimate", "loggedUser", "userId", "estimateChanged"})
 @RequestMapping("/user")
 public class UserController {
 
@@ -67,10 +67,10 @@ public class UserController {
     @GetMapping("")
     public String showDashboard(Model model,
                                 HttpSession httpSession) {
-        if (httpSession.getAttribute("user") == null) {
+        if (httpSession.getAttribute("loggedUser") == null) {
         }
 
-        User user = (User) httpSession.getAttribute("user");
+        User user = (User) httpSession.getAttribute("loggedUser");
 
         model.addAttribute("numberOfEstimates", userRepository.findByIdWithEstimates(user.getId()).getEstimates().size());
         model.addAttribute("estimates", userRepository.findByIdWithEstimates(user.getId()).getEstimates());
@@ -84,7 +84,7 @@ public class UserController {
     public String editUser(HttpSession httpSession,
                            Model model
     ) {
-        model.addAttribute("user", userRepository.findById(((User) httpSession.getAttribute("user")).getId()).get());
+        model.addAttribute("user", userRepository.findById(((User) httpSession.getAttribute("loggedUser")).getId()).get());
         return "user-edit-account";
     }
 
@@ -96,29 +96,6 @@ public class UserController {
             @RequestParam String password,
             @RequestParam String password2
     ) {
-
-//        if (!user.getPassword().equals(userRepository.findById(user.getId()).get().getPassword()))
-//            if (!passwordValidator.isValid(user.getPassword(), null)) {
-//                model.addAttribute("invalidPassword", Messages.INVALID_PASSWORD);
-//            }
-//
-//        if (results.hasErrors()) {
-//            return "user-edit-account";
-//        }
-//        if (model.getAttribute("invalidPassword") != null) {
-//            return "user-edit-account";
-//        }
-//
-//        if (!user.getPassword().equals(userRepository.findById(user.getId()).get().getPassword())) {
-//            user.setPasswordUnhashed(user.getPassword());
-//            user.setPassword(Security.hashPassword(user.getPassword()));
-//        }
-////        }
-//        userRepository.save(user);
-//        model.addAttribute("numberOfEstimates", userRepository.findByIdWithEstimates(user.getId()).getEstimates().size());
-//        model.addAttribute("estimates", userRepository.findByIdWithEstimates(user.getId()).getEstimates());
-//        return "user-dashboard";
-
 
         boolean updatePassword = false;
 
@@ -153,7 +130,8 @@ public class UserController {
 
         userRepository.save(user);
         model.addAttribute("userCount", userRepository.count());
-        return "user-dashboard";
+        return "redirect:/user/";
+
     }
 
 
@@ -176,7 +154,7 @@ public class UserController {
             HttpSession httpSession
     ) {
 
-        User user = (User) httpSession.getAttribute("user");
+        User user = (User) httpSession.getAttribute("loggedUser");
         user = userRepository.findByIdWithEstimates(user.getId());
         List<String> estimatesNames = user.getEstimates().stream().map(e -> e.getName()).collect(Collectors.toList());
         model.addAttribute("estimatesNames", estimatesNames);
@@ -200,7 +178,7 @@ public class UserController {
 
             if (selectedEstimate != null) {
 
-                Estimate estimate = estimateRepository.findByNameAndUserName(selectedEstimate, ((User) httpSession.getAttribute("user")).getUserName());
+                Estimate estimate = estimateRepository.findByNameAndUserId(selectedEstimate, ((User) httpSession.getAttribute("loggedUser")).getId());
 //                Estimate estimate = estimateRepository.findByName(selectedEstimate);
                 estimate.sortItemsByPosition();
                 model.addAttribute("estimate", estimate);
@@ -239,7 +217,7 @@ public class UserController {
                                    BindingResult result
 
     ) {
-        User user = (User) httpSession.getAttribute("user");
+        User user = (User) httpSession.getAttribute("loggedUser");
         if (estimate != null) {
             estimate.calculateAmounts();
         }
@@ -293,7 +271,7 @@ public class UserController {
 
         //Delete estimate
         if (button != null && button.equals("delete")) {
-            user = (User) httpSession.getAttribute("user");
+            user = (User) httpSession.getAttribute("loggedUser");
             user = userRepository.findByIdWithEstimates(user.getId());
             user.getEstimates().removeIf(e -> e.getId() == estimate.getId());
             userRepository.save(user);
@@ -406,7 +384,7 @@ public class UserController {
                               HttpSession httpSession) {
 
         model.addAttribute("userPriceListItem", new PriceListItem());
-        model.addAttribute("userName", userRepository.findById(((User) httpSession.getAttribute("user")).getId()).get().getUserName());
+        model.addAttribute("userName", userRepository.findById(((User) httpSession.getAttribute("loggedUser")).getId()).get().getUserName());
         return "user-add-item-form";
     }
 
@@ -417,7 +395,7 @@ public class UserController {
                               @RequestParam String button
     ) {
 
-        User user = (User) httpSession.getAttribute("user");
+        User user = (User) httpSession.getAttribute("loggedUser");
         String userName = user.getUserName();
         PriceList userPR = null;
         if(button.equals("save")) {
@@ -463,7 +441,7 @@ public class UserController {
                                @RequestParam String id
     ) {
         model.addAttribute("userPriceListItem", priceListItemRepository.findById(Long.parseLong(id)));
-        model.addAttribute("userName", userRepository.findById(((User) httpSession.getAttribute("user")).getId()).get().getUserName());
+        model.addAttribute("userName", userRepository.findById(((User) httpSession.getAttribute("loggedUser")).getId()).get().getUserName());
         return "user-add-item-form";
     }
 
@@ -474,7 +452,7 @@ public class UserController {
                                HttpSession httpSession,
                                @RequestParam String button
     ) {
-        User user = (User) httpSession.getAttribute("user");
+        User user = (User) httpSession.getAttribute("loggedUser");
 
         if (result.hasErrors()) {
             System.out.println(result);
@@ -654,7 +632,7 @@ public class UserController {
             @RequestParam String id
     ) {
 
-        User user = (User) httpSession.getAttribute("user");
+        User user = (User) httpSession.getAttribute("loggedUser");
         try { //protection against to fast clicking on delete link in view / element not found in DB exception
             PriceList userPR = priceListRepository.findByIdWithPriceListItems(
                     userRepository.findByIdWithPricelist(user.getId()).getUserPriceList().getId());
@@ -705,7 +683,7 @@ public class UserController {
             HttpSession httpSession,
             Model model
     ) {
-        User user = (User) httpSession.getAttribute("user");
+        User user = (User) httpSession.getAttribute("loggedUser");
         model.addAttribute("userAvailablePriceLists", priceListRepository.findAllByUserAndAllGeneral(user.getId()));
         return "user-select-price-list-to-show";
     }
@@ -716,7 +694,7 @@ public class UserController {
             HttpSession httpSession,
             @RequestParam String selectedPriceListId
     ) {
-        User user = (User) httpSession.getAttribute("user");
+        User user = (User) httpSession.getAttribute("loggedUser");
         if (user.getUserPriceList() != null) {
             if (user.getUserPriceList().getId().equals(priceListRepository.findById(Long.parseLong(selectedPriceListId)).get().getId())) {
                 model.addAttribute("isUserPricelist", "true");
@@ -735,7 +713,7 @@ public class UserController {
                                     HttpSession httpSession
     ) {
 
-        User user = (User) httpSession.getAttribute("user");
+        User user = (User) httpSession.getAttribute("loggedUser");
         Long id = null;
         PriceList priceList = null;
 

@@ -19,12 +19,6 @@ public interface EstimateItemRepository extends JpaRepository<EstimateItem, Long
     @Query(nativeQuery = true,value = "SELECT * FROM heroku_266825118c34932.estimate_estimateitem WHERE estimate_items_id = ?1")
     EstimateItem findByItemInParentTable(Long id);
 
-    @Modifying
-    @Transactional
-    @Query(nativeQuery = true,value = "DELETE FROM heroku_266825118c34932.estimateitem WHERE id = ?1")
-    void deleteById(String id);
-
-
     @Query("SELECT ei FROM EstimateItem ei LEFT JOIN FETCH ei.priceListItem pi where pi.id = :id")
     List<EstimateItem> findAllByPriceListItemId(@Param("id") Long id);
 

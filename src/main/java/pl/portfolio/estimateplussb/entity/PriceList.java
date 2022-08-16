@@ -15,7 +15,7 @@ public class PriceList {
     private String name;
     @Column(name = "numberOfItems")
     private Long numberOfItems;
-    @OneToMany
+    @OneToMany (cascade = CascadeType.ALL)
     @JoinTable(name = "pricelist_pricelistitem",
             joinColumns = @JoinColumn(name = "PriceList_id"),
             inverseJoinColumns = @JoinColumn(name = "priceListItems_id"))

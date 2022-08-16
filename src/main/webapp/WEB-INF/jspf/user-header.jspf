@@ -73,7 +73,7 @@
             </div>
             <div class="sb-sidenav-footer">
                 <div class="small">Logged in as:</div>
-                ${user.userName}
+                ${loggedUser.userName}
             </div>
         </nav>
     </div>
